@@ -62,6 +62,10 @@ class NukiLock(object):
     def state_name(self):
         return self._json.get('stateName', None)
 
+    @property
+    def is_locked(self):
+        return self.state == LOCK_STATES['LOCKED']
+
     def lock(self, block=False):
         return self._bridge.lock(nuki_id=self.nuki_id, block=block)
 
