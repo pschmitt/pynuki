@@ -144,7 +144,9 @@ class NukiBridge(object):
 
     @property
     def locks(self):
-        return [NukiLock(self, l) for l in self.list()]
+        nuki_locks = [NukiLock(self, l) for l in self.list()]
+        [x.update() for x in nuki_locks]
+        return nuki_locks
 
     def lock(self, nuki_id, block=False):
         return self.lock_action(
