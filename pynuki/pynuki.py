@@ -74,7 +74,11 @@ class NukiLock(object):
 
     def update(self):
         data = self._bridge.lock_state(self.nuki_id)
-        self._json.update({k:v for k,v in data.items() if k != 'success'})
+        if not data['success']:
+            logger.warning(
+                'Failed to update the state of lock {}'.format(self.nuki_id)
+            )
+        self._json.update({k: v for k, v in data.items() if k != 'success'})
 
     def __repr__(self):
         return '<NukiLock: {}>'.format(self._json)
@@ -148,9 +152,20 @@ class NukiBridge(object):
 
     @property
     def locks(self):
-        nuki_locks = [NukiLock(self, l) for l in self.list()]
-        [x.update() for x in nuki_locks]
-        return nuki_locks
+        locks = []
+        for l in self.list():
+            # lock_data holds the name and nuki id of the lock
+            # eg: {'name': 'Home', 'nukiId': 241563832}
+            lock_data = {k: v for k, v in l.items() \
+                         if k not in ['lastKnownState']}
+            # state_data holds the last known state of the lock
+            # eg: {'batteryCritical': False, 'state': 1, 'stateName': 'locked'}
+            state_data = {k: v for k, v in l['lastKnownState'].items() \
+                          if k not in ['timestamp']}
+            # Merge lock_data and state_data
+            data = {**lock_data, **state_data}  # Python 3.5
+            locks.append(NukiLock(self, data))
+        return locks
 
     def lock(self, nuki_id, block=False):
         return self.lock_action(
