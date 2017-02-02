@@ -2,10 +2,9 @@
 # coding: utf-8
 
 '''
-Based on the Bridge API version 1.3
+Based on the Bridge API version 1.5
 
 Documentation:
-https://nuki.io/wp-content/uploads/2016/04/Bridge-API-v1.3.pdf
 https://nuki.io/wp-content/uploads/2016/04/Bridge-API-v1.5.pdf
 '''
 
