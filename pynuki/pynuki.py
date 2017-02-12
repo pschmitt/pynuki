@@ -162,8 +162,12 @@ class NukiBridge(object):
             # eg: {'batteryCritical': False, 'state': 1, 'stateName': 'locked'}
             state_data = {k: v for k, v in l['lastKnownState'].items() \
                           if k not in ['timestamp']}
+
             # Merge lock_data and state_data
-            data = {**lock_data, **state_data}  # Python 3.5
+            # data = {**lock_data, **state_data}  # Python 3.5+
+            data = lock_data.copy()
+            data.update(state_data)
+
             locks.append(NukiLock(self, data))
         return locks
 
