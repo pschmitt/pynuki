@@ -72,13 +72,26 @@ class NukiLock(object):
     def unlock(self, block=False):
         return self._bridge.unlock(nuki_id=self.nuki_id, block=block)
 
-    def update(self):
-        data = self._bridge.lock_state(self.nuki_id)
-        if not data['success']:
-            logger.warning(
+    def update(self, aggressive=False):
+        """
+        Update the state of the NukiLock
+        :param aggressive: Whether to aggressively poll the Bridge. If set to
+        True, this will actively query the Lock, thus using more battery.
+        :type aggressive: bool
+        """
+        if aggressive:
+            data = self._bridge.lock_state(self.nuki_id)
+            if not data['success']:
+                logger.warning(
                 'Failed to update the state of lock {}'.format(self.nuki_id)
             )
-        self._json.update({k: v for k, v in data.items() if k != 'success'})
+            self._json.update({k: v for k, v in data.items() if k != 'success'})
+        else:
+            data = [l for l in self._bridge.locks if l.nuki_id == self.nuki_id]
+            assert data, (
+                   'Failed to update data for lock. '
+                   'Nuki ID {} volatized.'.format(self.nuki_id))
+            self._json.update(data[0]._json)
 
     def __repr__(self):
         return '<NukiLock: {}>'.format(self._json)
