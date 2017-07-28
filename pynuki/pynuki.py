@@ -72,6 +72,10 @@ class NukiLock(object):
     def unlock(self, block=False):
         return self._bridge.unlock(nuki_id=self.nuki_id, block=block)
 
+    def lock_n_go(self, unlatch=False, block=False):
+        return self._bridge.lock_n_go(
+            nuki_id=self.nuki_id, unlatch=unlatch,block=block)
+
     def update(self, aggressive=False):
         """
         Update the state of the NukiLock
@@ -193,3 +197,9 @@ class NukiBridge(object):
         return self.lock_action(
             nuki_id, action=LOCK_ACTIONS['UNLOCK'], block=block
         )
+
+    def lock_n_go(self, nuki_id, unlatch=False, block=False):
+        action = LOCK_ACTIONS['LOCK_N_GO']
+        if unlatch:
+            action = LOCK_ACTIONS['LOCK_N_GO_WITH_UNLATCH']
+        return self.lock_action(nuki_id, action=action, block=block)
