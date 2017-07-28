@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='pynuki',
-    version='1.3.0',
+    version='1.3.1',
     license='GPL3',
     description='Python bindings for nuki.io bridges',
     # long_description=open('README.rst').read(),
