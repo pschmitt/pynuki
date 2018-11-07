@@ -120,6 +120,15 @@ class NukiBridge(object):
         result.raise_for_status()
         return result.json()
 
+    def auth(self):
+        url = '{}/{}'.format(self.__api_url, 'auth')
+        result = requests.get(url)
+        result.raise_for_status()
+        return result.json()
+
+    def config_auth(self, enable):
+        return self.__rq('configAuth', {'enable': 1 if enable else 0})
+
     def list(self):
         return self.__rq('list')
 
