@@ -15,6 +15,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+REQUESTS_TIMEOUT = 5
+
 LOCK_STATES = {
     'UNCALIBRATED': 0,
     'LOCKED': 1,
@@ -116,13 +118,13 @@ class NukiBridge(object):
         get_params = {'token': self.token}
         if params:
             get_params.update(params)
-        result = requests.get(url, params=get_params)
+        result = requests.get(url, params=get_params, timeout=REQUESTS_TIMEOUT)
         result.raise_for_status()
         return result.json()
 
     def auth(self):
         url = '{}/{}'.format(self.__api_url, 'auth')
-        result = requests.get(url)
+        result = requests.get(url, timeout=REQUESTS_TIMEOUT)
         result.raise_for_status()
         return result.json()
 
