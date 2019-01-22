@@ -2,10 +2,10 @@
 # coding: utf-8
 
 '''
-Based on the Bridge API version 1.5
+Based on the Bridge API version 1.7
 
 Documentation:
-https://nuki.io/wp-content/uploads/2016/04/Bridge-API-v1.5.pdf
+https://developer.nuki.io/page/nuki-bridge-http-api-170/4/
 '''
 
 import requests
@@ -90,11 +90,15 @@ class NukiLock(object):
 
 
 class NukiBridge(object):
-    def __init__(self, hostname, token, port=8080):
+    def __init__(self, hostname=None, token=None, port=8080):
         self.hostname = hostname
         self.token = token
         self.port = port
-        self.__api_url = 'http://{}:{}'.format(hostname, port)
+        if not hostname:
+            discovery = discover_bridges()
+            if discovery:
+                self.hostname = discovery[0].get('ip')
+        self.__api_url = 'http://{}:{}'.format(self.hostname, port)
 
     def __rq(self, endpoint, params=None):
         url = '{}/{}'.format(self.__api_url, endpoint)
@@ -107,6 +111,21 @@ class NukiBridge(object):
 
     def list(self):
         return self.__rq('list')
+
+    def auth(self):
+        logger.info("Please press the button on the bridge to enable the API")
+        return self.__rq('auth')
+
+    def retrieve_token(self):
+        auth = self.auth()
+        if auth.get('success'):
+            logger.info("Received token")
+            self.token = auth.get('token')
+        else:
+            logger.warning("Failed to retrieve token")
+
+    def config_auth(self, enable):
+        return self.__rq('configAuth', {'enable': 1 if enable else 0})
 
     def lock_state(self, nuki_id):
         return self.__rq('lockState', {'nukiId': nuki_id})
