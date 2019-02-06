@@ -107,10 +107,11 @@ class NukiLock(object):
 
 
 class NukiBridge(object):
-    def __init__(self, hostname, token, port=8080):
+    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT):
         self.hostname = hostname
         self.token = token
         self.port = port
+        self.requests_timeout = timeout
         self.__api_url = 'http://{}:{}'.format(hostname, port)
 
     def __rq(self, endpoint, params=None):
@@ -118,13 +119,13 @@ class NukiBridge(object):
         get_params = {'token': self.token}
         if params:
             get_params.update(params)
-        result = requests.get(url, params=get_params, timeout=REQUESTS_TIMEOUT)
+        result = requests.get(url, params=get_params, timeout=self.requests_timeout)
         result.raise_for_status()
         return result.json()
 
     def auth(self):
         url = '{}/{}'.format(self.__api_url, 'auth')
-        result = requests.get(url, timeout=REQUESTS_TIMEOUT)
+        result = requests.get(url, timeout=self.requests_timeout)
         result.raise_for_status()
         return result.json()
 
@@ -222,3 +223,4 @@ class NukiBridge(object):
         return self.lock_action(
             nuki_id, action=LOCK_ACTIONS['UNLATCH'], block=block
         )
+
