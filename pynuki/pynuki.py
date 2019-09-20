@@ -121,9 +121,6 @@ class NukiLock(object):
               self._json.update({k: v for k, v in data.items() if k != 'success'})
         else:
             data = [l for l in self._bridge.locks if l.nuki_id == self.nuki_id]
-            if data is None or not data['success']:
-               logger.warning('Failed to update the state of lock {}'.format(self.nuki_id))
-               raise ValueError('Update not completed')
             assert data, (
                    'Failed to update data for lock. '
                    'Nuki ID {} volatized.'.format(self.nuki_id))
@@ -154,9 +151,11 @@ class NukiBridge(object):
              get_params.update(params)
            return_result = None
            try:
+             logger.debug('Nuki request {} {} '.format(url,get_params))
              result = requests.get(url, params=get_params, timeout=requests_timeout)
              result.raise_for_status()
              return_result = result.json()
+             logger.debug('Nuki response {} '.format(return_result))
            except Exception as e:
              logger.warning('Nuki bridge request failed {}'.format(e))
         finally:
