@@ -10,13 +10,16 @@ https://nuki.io/wp-content/uploads/2016/04/Bridge-API-v1.5.pdf
 
 import requests
 import logging
+import time
+from threading import Lock
 
 
 logger = logging.getLogger(__name__)
 
-
+RQ_LOCK = Lock()
 REQUESTS_TIMEOUT = 5
-
+REQUEST_GAP_SECONDS = 2
+RQ_TIMEOUT = 5
 LOCK_STATES = {
     'UNCALIBRATED': 0,
     'LOCKED': 1,
@@ -68,18 +71,39 @@ class NukiLock(object):
     def is_locked(self):
         return self.state == LOCK_STATES['LOCKED']
 
+    def updated_lock_result(self, result, lock_state, block):
+        if block and result is not None and result["success"]:
+          result.update({'state': lock_state})
+          self._json.update({k: v for k, v in result.items() if k != 'success'})
+        return result
+
     def lock(self, block=False):
-        return self._bridge.lock(nuki_id=self.nuki_id, block=block)
+        return self.updated_lock_result(
+             self._bridge.lock(nuki_id=self.nuki_id, block=block),
+             LOCK_STATES['LOCKED'],
+             block
+        )
 
     def unlock(self, block=False):
-        return self._bridge.unlock(nuki_id=self.nuki_id, block=block)
+        return self.updated_lock_result(
+             self._bridge.unlock(nuki_id=self.nuki_id, block=block),
+             LOCK_STATES['UNLOCKED'],
+             block
+        )
 
     def lock_n_go(self, unlatch=False, block=False):
-        return self._bridge.lock_n_go(
-            nuki_id=self.nuki_id, unlatch=unlatch, block=block)
+        return  self.update_self_with_lock_result(
+             self._bridge.lock_n_go(
+                nuki_id=self.nuki_id, unlatch=unlatch, block=block),
+             LOCK_STATES['UNLOCKED_LOCK_N_GO']
+        ) 
 
     def unlatch(self, block=False):
-        return self._bridge.unlatch(nuki_id=self.nuki_id, block=block)
+        return  self.updated_ock_result(
+             self._bridge.unlatch(nuki_id=self.nuki_id, block=block),
+             LOCK_STATES['UNLATCHED'],
+             block
+        )
 
     def update(self, aggressive=False):
         """
@@ -90,13 +114,16 @@ class NukiLock(object):
         """
         if aggressive:
             data = self._bridge.lock_state(self.nuki_id)
-            if not data['success']:
-                logger.warning(
-                'Failed to update the state of lock {}'.format(self.nuki_id)
-            )
-            self._json.update({k: v for k, v in data.items() if k != 'success'})
+            if data is None or not data['success']:
+               logger.warning('Failed to update the state of lock {}'.format(self.nuki_id))
+               raise ValueError('Update not completed')
+            else:
+              self._json.update({k: v for k, v in data.items() if k != 'success'})
         else:
             data = [l for l in self._bridge.locks if l.nuki_id == self.nuki_id]
+            if data is None or not data['success']:
+               logger.warning('Failed to update the state of lock {}'.format(self.nuki_id))
+               raise ValueError('Update not completed')
             assert data, (
                    'Failed to update data for lock. '
                    'Nuki ID {} volatized.'.format(self.nuki_id))
@@ -107,26 +134,41 @@ class NukiLock(object):
 
 
 class NukiBridge(object):
-    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT):
+    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT, should_queue=False):
         self.hostname = hostname
         self.token = token
         self.port = port
         self.requests_timeout = timeout
         self.__api_url = 'http://{}:{}'.format(hostname, port)
+        self.should_queue = should_queue
+
+    @staticmethod
+    def __make_request(url,token, endpoint, requests_timeout, params=None, should_queue=False):
+        if should_queue:
+           RQ_LOCK.acquire()
+           time.sleep(REQUEST_GAP_SECONDS)
+        try:
+           url = '{}/{}'.format(url, endpoint)
+           get_params = {'token': token}
+           if params:
+             get_params.update(params)
+           return_result = None
+           try:
+             result = requests.get(url, params=get_params, timeout=requests_timeout)
+             result.raise_for_status()
+             return_result = result.json()
+           except Exception as e:
+             logger.warning('Nuki bridge request failed {}'.format(e))
+        finally:
+           if should_queue:
+             RQ_LOCK.release()
+           return return_result
 
     def __rq(self, endpoint, params=None):
-        url = '{}/{}'.format(self.__api_url, endpoint)
-        get_params = {'token': self.token}
-        if params:
-            get_params.update(params)
-        result = requests.get(url, params=get_params, timeout=self.requests_timeout)
-        result.raise_for_status()
-        return result.json()
+        return self.__make_request(self.__api_url, self.token, endpoint, self.requests_timeout, params, self.should_queue)
 
     def auth(self):
-        url = '{}/{}'.format(self.__api_url, 'auth')
-        result = requests.get(url, timeout=self.requests_timeout)
-        result.raise_for_status()
+        result = self.__rq('auth')
         return result.json()
 
     def config_auth(self, enable):
@@ -136,7 +178,7 @@ class NukiBridge(object):
         return self.__rq('list')
 
     def lock_state(self, nuki_id):
-        return self.__rq('lockState', {'nukiId': nuki_id})
+      return self.__rq('lockState', {'nukiId': nuki_id})
 
     def lock_action(self, nuki_id, action, block=False):
         params = {
