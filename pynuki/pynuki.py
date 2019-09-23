@@ -131,7 +131,7 @@ class NukiLock(object):
 
 
 class NukiBridge(object):
-    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT, should_queue=False):
+    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT, should_queue=True):
         self.hostname = hostname
         self.token = token
         self.port = port
@@ -140,7 +140,7 @@ class NukiBridge(object):
         self.should_queue = should_queue
 
     @staticmethod
-    def __make_request(url,token, endpoint, requests_timeout, params=None, should_queue=False):
+    def __make_request(url,token, endpoint, requests_timeout, should_queue, params=None):
         if should_queue:
            RQ_LOCK.acquire()
            time.sleep(REQUEST_GAP_SECONDS)
@@ -164,7 +164,7 @@ class NukiBridge(object):
            return return_result
 
     def __rq(self, endpoint, params=None):
-        return self.__make_request(self.__api_url, self.token, endpoint, self.requests_timeout, params, self.should_queue)
+        return self.__make_request(self.__api_url, self.token, endpoint, self.requests_timeout, self.should_queue, params)
 
     def auth(self):
         result = self.__rq('auth')
@@ -179,7 +179,7 @@ class NukiBridge(object):
     def lock_state(self, nuki_id):
       return self.__rq('lockState', {'nukiId': nuki_id})
 
-    def lock_action(self, nuki_id, action, block=False):
+    def lock_action(self, nuki_id, action, block=True):
         params = {
             'nukiId': nuki_id,
             'action': action,
@@ -244,23 +244,23 @@ class NukiBridge(object):
             locks.append(NukiLock(self, data))
         return locks
 
-    def lock(self, nuki_id, block=False):
+    def lock(self, nuki_id, block=True):
         return self.lock_action(
             nuki_id, action=LOCK_ACTIONS['LOCK'], block=block
         )
 
-    def unlock(self, nuki_id, block=False):
+    def unlock(self, nuki_id, block=True):
         return self.lock_action(
             nuki_id, action=LOCK_ACTIONS['UNLOCK'], block=block
         )
 
-    def lock_n_go(self, nuki_id, unlatch=False, block=False):
+    def lock_n_go(self, nuki_id, unlatch=False, block=True):
         action = LOCK_ACTIONS['LOCK_N_GO']
         if unlatch:
             action = LOCK_ACTIONS['LOCK_N_GO_WITH_UNLATCH']
         return self.lock_action(nuki_id, action=action, block=block)
 
-    def unlatch(self, nuki_id, block=False):
+    def unlatch(self, nuki_id, block=True):
         return self.lock_action(
             nuki_id, action=LOCK_ACTIONS['UNLATCH'], block=block
         )
