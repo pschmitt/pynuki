@@ -203,6 +203,11 @@ class NukiBridge(object):
                         "Login error. Provided token is invalid."
                     )
 
+    @property
+    def is_hardware_bridge(self):
+        info = self.info()
+        return info.get("bridgeType") == BRIDGE_TYPE_HW
+
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
         if self.secure:
