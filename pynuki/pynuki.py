@@ -156,6 +156,9 @@ class NukiBridge(object):
         self.requests_timeout = timeout
         self.token = token
 
+    def __repr__(self):
+        return f"<NukiBridge: {self.hostname}:{self.port} (token={self.token})>"
+
     @staticmethod
     def discover():
         res = requests.get("https://api.nuki.io/discover/bridges")
