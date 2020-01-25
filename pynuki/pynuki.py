@@ -74,6 +74,10 @@ def hash_token(token):
     return {"ts": ts, "rnr": rnr, "hash": hash_256}
 
 
+class InvalidCredentialsException(Exception):
+    pass
+
+
 class NukiLock(object):
     def __init__(self, bridge, json):
         self._bridge = bridge
@@ -146,11 +150,11 @@ class NukiLock(object):
 class NukiBridge(object):
     def __init__(self, hostname, token=None, port=8080, secure=True, timeout=REQUESTS_TIMEOUT):
         self.hostname = hostname
-        self.token = token
         self.port = port
+        self.__api_url = f"http://{hostname}:{port}"
         self.secure = secure
         self.requests_timeout = timeout
-        self.__api_url = f"http://{hostname}:{port}"
+        self.token = token
 
     @staticmethod
     def discover():
@@ -165,6 +169,23 @@ class NukiBridge(object):
             logger.warning("No bridge discovered.")
         else:
             return [NukiBridge(hostname=x.get("ip"), port=x.get("port")) for x in bridges]
+
+    @property
+    def token(self):
+        return self.__token
+
+    @token.setter
+    def token(self, token):
+        self.__token = token
+        # Try to log in if token has been set
+        if self.token:
+            try:
+                self.info()
+            except requests.exceptions.HTTPError as err:
+                if err.response.status_code == 401:
+                    logger.error("Could not login with provided credentials")
+                    raise InvalidCredentialsException("Login error. Provided token is invalid.")
+
 
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
