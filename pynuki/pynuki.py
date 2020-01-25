@@ -16,51 +16,14 @@ import logging
 
 import requests
 
+from . import constants as const
+
 
 logger = logging.getLogger(__name__)
 
 
 # Default values
 REQUESTS_TIMEOUT = 5
-
-# Constants
-ACTION_LOCK_UNLOCK = 1
-ACTION_LOCK_LOCK = 2
-ACTION_LOCK_UNLATCH = 3
-ACTION_LOCK_LOCK_N_GO = 4
-ACTION_LOCK_LOCK_N_GO_WITH_UNLATCH = 5
-
-ACTION_OPENER_ACTIVATE_RTO = 1
-ACTION_OPENER_DEACTIVATE_RTO = 2
-ACTION_OPENER_ELECTRIC_STRIKE_ACTUATION = 3
-ACTION_OPENER_ACTIVATE_CONTINUOUS = 4
-ACTION_OPENER_DEACTIVATE_CONTINUOUS = 5
-
-BRIDGE_TYPE_HW = 1
-BRIDGE_TYPE_SW = 2
-
-DEVICE_TYPE_LOCK = 0
-DEVICE_TYPE_OPENER = 2
-
-MODE_LOCK_DOOR = 2
-MODE_OPENER_DOOR = 2
-MODE_OPENER_CONTINUOUS = 3
-
-STATE_OPENER_UNTRAINED = 0
-STATE_OPENER_ONLINE = 1
-STATE_OPENER_RTO_ACTIVE = 3
-STATE_OPENER_OPENER_OPEN = 5
-
-STATE_LOCK_UNCALIBRATED = 0
-STATE_LOCK_LOCKED = 1
-STATE_LOCK_UNLOCKING = 2
-STATE_LOCK_UNLOCKED = 3
-STATE_LOCK_LOCKING = 4
-STATE_LOCK_UNLATCHED = 5
-STATE_LOCK_UNLOCKED_LOCK_N_GO = 6
-STATE_LOCK_UNLATCHING = 7
-STATE_LOCK_MOTOR_BLOCKED = 254
-STATE_LOCK_UNDEFINED = 255
 
 
 def __sha256sum(text):
@@ -105,7 +68,7 @@ class NukiLock(object):
 
     @property
     def is_locked(self):
-        return self.state == STATE_LOCK_LOCKED
+        return self.state == const.STATE_LOCK_LOCKED
 
     def lock(self, block=False):
         return self._bridge.lock(nuki_id=self.nuki_id, block=block)
@@ -206,7 +169,7 @@ class NukiBridge(object):
     @property
     def is_hardware_bridge(self):
         info = self.info()
-        return info.get("bridgeType") == BRIDGE_TYPE_HW
+        return info.get("bridgeType") == const.BRIDGE_TYPE_HW
 
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
@@ -246,13 +209,13 @@ class NukiBridge(object):
     def list(self):
         return self.__rq("list")
 
-    def lock_state(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
+    def lock_state(self, nuki_id, device_type=const.DEVICE_TYPE_LOCK):
         return self.__rq(
             "lockState", {"nukiId": nuki_id, "deviceType": device_type}
         )
 
     def lock_action(
-        self, nuki_id, action, device_type=DEVICE_TYPE_LOCK, block=False
+        self, nuki_id, action, device_type=const.DEVICE_TYPE_LOCK, block=False
     ):
         params = {
             "nukiId": nuki_id,
@@ -262,12 +225,12 @@ class NukiBridge(object):
         }
         return self.__rq("lockAction", params)
 
-    def unpair(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
+    def unpair(self, nuki_id, device_type=const.DEVICE_TYPE_LOCK):
         return self.__rq(
             "unpair", {"nukiId": nuki_id, "deviceType": device_type}
         )
 
-    def info(self, bridge_type=BRIDGE_TYPE_HW):
+    def info(self, bridge_type=const.BRIDGE_TYPE_HW):
         data = self.__rq("info", {"bridgeType": bridge_type})
         self._json = data
         return data
@@ -328,26 +291,26 @@ class NukiBridge(object):
         return locks
 
     def lock(self, nuki_id, block=False):
-        return self.lock_action(nuki_id, action=ACTION_LOCK_LOCK, block=block)
+        return self.lock_action(nuki_id, action=const.ACTION_LOCK_LOCK, block=block)
 
     def unlock(self, nuki_id, block=False):
-        return self.lock_action(nuki_id, action=ACTION_LOCK_UNLOCK, block=block)
+        return self.lock_action(nuki_id, action=const.ACTION_LOCK_UNLOCK, block=block)
 
     def lock_n_go(self, nuki_id, unlatch=False, block=False):
-        action = ACTION_LOCK_LOCK_N_GO
+        action = const.ACTION_LOCK_LOCK_N_GO
         if unlatch:
-            action = ACTION_LOCK_LOCK_N_GO_WITH_UNLATCH
+            action = const.ACTION_LOCK_LOCK_N_GO_WITH_UNLATCH
         return self.lock_action(nuki_id, action=action, block=block)
 
     def unlatch(self, nuki_id, block=False):
         return self.lock_action(
-            nuki_id, action=ACTION_LOCK_UNLATCH, block=block
+            nuki_id, action=const.ACTION_LOCK_UNLATCH, block=block
         )
 
-    def simple_lock(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
+    def simple_lock(self, nuki_id, device_type=const.DEVICE_TYPE_LOCK):
         return self.__rq("lock", {"nukiId": nuki_id, "deviceType": device_type})
 
-    def simple_unlock(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
+    def simple_unlock(self, nuki_id, device_type=const.DEVICE_TYPE_LOCK):
         return self.__rq(
             "unlock", {"nukiId": nuki_id, "deviceType": device_type}
         )
