@@ -150,8 +150,11 @@ class NukiBridge(object):
             "unpair", {"nukiId": nuki_id, "deviceType": device_type}
         )
 
-    def info(self, bridge_type=const.BRIDGE_TYPE_HW):
-        data = self.__rq("info", {"bridgeType": bridge_type})
+    def info(self):
+        # Return cached value
+        if self._json:
+            return self._json
+        data = self.__rq("info")
         self._json = data
         return data
 
@@ -184,6 +187,11 @@ class NukiBridge(object):
         return self.__rq("factoryReset")
 
     # Shorthand methods
+
+    def update(self):
+        # Invalidate cache
+        self._json = None
+        return self.info()
 
     def _get_devices(self, device_type=None):
         devices = []
