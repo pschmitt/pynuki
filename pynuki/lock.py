@@ -1,5 +1,7 @@
+# coding: utf-8
+
 from . import constants as const
-from .bridge import logger
+from .utils import logger
 
 
 class NukiLock(object):

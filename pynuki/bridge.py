@@ -9,33 +9,17 @@ https://developer.nuki.io/t/bridge-http-api/26
 https://developer.nuki.io/uploads/short-url/a8eIacr0ku9zogOyuIuSEyw1PcA.pdf
 """
 
-from datetime import datetime
-from random import randint
-import hashlib
 import logging
 
 import requests
 
 from . import constants as const
+from .utils import hash_token, logger
 from .lock import NukiLock
-
-
-logger = logging.getLogger(__name__)
 
 
 # Default values
 REQUESTS_TIMEOUT = 5
-
-
-def __sha256sum(text):
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def hash_token(token):
-    rnr = randint(0, 65535)
-    ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    hash_256 = __sha256sum(f"{ts},{rnr},{token}")
-    return {"ts": ts, "rnr": rnr, "hash": hash_256}
 
 
 class InvalidCredentialsException(Exception):
