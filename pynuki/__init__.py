@@ -1,2 +1,4 @@
 from __future__ import absolute_import
-from .pynuki import (NukiBridge, NukiLock)
+from .bridge import NukiBridge
+from .lock import NukiLock
+from .constants import *
