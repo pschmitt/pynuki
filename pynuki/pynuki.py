@@ -148,7 +148,14 @@ class NukiLock(object):
 
 
 class NukiBridge(object):
-    def __init__(self, hostname, token=None, port=8080, secure=True, timeout=REQUESTS_TIMEOUT):
+    def __init__(
+        self,
+        hostname,
+        token=None,
+        port=8080,
+        secure=True,
+        timeout=REQUESTS_TIMEOUT,
+    ):
         self.hostname = hostname
         self.port = port
         self.__api_url = f"http://{hostname}:{port}"
@@ -171,7 +178,10 @@ class NukiBridge(object):
         if not bridges:
             logger.warning("No bridge discovered.")
         else:
-            return [NukiBridge(hostname=x.get("ip"), port=x.get("port")) for x in bridges]
+            return [
+                NukiBridge(hostname=x.get("ip"), port=x.get("port"))
+                for x in bridges
+            ]
 
     @property
     def token(self):
@@ -188,8 +198,9 @@ class NukiBridge(object):
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 401:
                     logger.error("Could not login with provided credentials")
-                    raise InvalidCredentialsException("Login error. Provided token is invalid.")
-
+                    raise InvalidCredentialsException(
+                        "Login error. Provided token is invalid."
+                    )
 
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
@@ -202,10 +213,12 @@ class NukiBridge(object):
         # Convert list to string to prevent request from encoding the url params
         # https://stackoverflow.com/a/23497912
         get_params_str = "&".join(f"{k}={v}" for k, v in get_params.items())
-        result = requests.get(url, params=get_params_str, timeout=self.requests_timeout)
+        result = requests.get(
+            url, params=get_params_str, timeout=self.requests_timeout
+        )
         result.raise_for_status()
         data = result.json()
-        if 'success' in data:
+        if "success" in data:
             if not data.get("success"):
                 logger.warning(f"Call failed: {result}")
         return data
@@ -216,7 +229,9 @@ class NukiBridge(object):
         result.raise_for_status()
         data = result.json()
         if not data.get("success", False):
-            logging.warning("Failed to authenticate against bridge. Have you pressed the button?")
+            logging.warning(
+                "Failed to authenticate against bridge. Have you pressed the button?"
+            )
         return data
 
     def config_auth(self, enable):
@@ -226,9 +241,13 @@ class NukiBridge(object):
         return self.__rq("list")
 
     def lock_state(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
-        return self.__rq("lockState", {"nukiId": nuki_id, "deviceType": device_type})
+        return self.__rq(
+            "lockState", {"nukiId": nuki_id, "deviceType": device_type}
+        )
 
-    def lock_action(self, nuki_id, action, device_type=DEVICE_TYPE_LOCK, block=False):
+    def lock_action(
+        self, nuki_id, action, device_type=DEVICE_TYPE_LOCK, block=False
+    ):
         params = {
             "nukiId": nuki_id,
             "deviceType": device_type,
@@ -238,10 +257,12 @@ class NukiBridge(object):
         return self.__rq("lockAction", params)
 
     def unpair(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
-        return self.__rq("unpair", {"nukiId": nuki_id, "deviceType": device_type})
+        return self.__rq(
+            "unpair", {"nukiId": nuki_id, "deviceType": device_type}
+        )
 
     def info(self, bridge_type=BRIDGE_TYPE_HW):
-        return self.__rq("info",  {"bridgeType": bridge_type})
+        return self.__rq("info", {"bridgeType": bridge_type})
 
     # Callback endpoints
 
@@ -279,11 +300,15 @@ class NukiBridge(object):
         for l in self.list():
             # lock_data holds the name and nuki id of the lock
             # eg: {'name': 'Home', 'nukiId': 241563832}
-            lock_data = {k: v for k, v in l.items() if k not in ["lastKnownState"]}
+            lock_data = {
+                k: v for k, v in l.items() if k not in ["lastKnownState"]
+            }
             # state_data holds the last known state of the lock
             # eg: {'batteryCritical': False, 'state': 1, 'stateName': 'locked'}
             state_data = {
-                k: v for k, v in l["lastKnownState"].items() if k not in ["timestamp"]
+                k: v
+                for k, v in l["lastKnownState"].items()
+                if k not in ["timestamp"]
             }
 
             # Merge lock_data and state_data
@@ -307,10 +332,14 @@ class NukiBridge(object):
         return self.lock_action(nuki_id, action=action, block=block)
 
     def unlatch(self, nuki_id, block=False):
-        return self.lock_action(nuki_id, action=ACTION_LOCK_UNLATCH, block=block)
+        return self.lock_action(
+            nuki_id, action=ACTION_LOCK_UNLATCH, block=block
+        )
 
     def simple_lock(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
         return self.__rq("lock", {"nukiId": nuki_id, "deviceType": device_type})
 
     def simple_unlock(self, nuki_id, device_type=DEVICE_TYPE_LOCK):
-        return self.__rq("unlock", {"nukiId": nuki_id, "deviceType": device_type})
+        return self.__rq(
+            "unlock", {"nukiId": nuki_id, "deviceType": device_type}
+        )
