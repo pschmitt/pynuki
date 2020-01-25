@@ -35,7 +35,7 @@ class NukiDevice(object):
 
     @property
     def device_type(self):
-        dev = self._json.get("deviceType")
+        return self._json.get("deviceType")
 
     @property
     def device_type_str(self):
@@ -44,7 +44,26 @@ class NukiDevice(object):
             return "lock"
         elif dev == const.DEVICE_TYPE_OPENER:
             return "opener"
-        logger.error("Unknown device type: {dev}")
+        logger.error(f"Unknown device type: {dev}")
+        return "UNKNOWN"
+
+    @property
+    def mode(self):
+        return self._json.get("mode")
+
+    @property
+    def mode_str(self):
+        dev = self.device_type
+        mode = self.mode
+        if dev == const.DEVICE_TYPE_LOCK:
+            if mode == const.MODE_LOCK_DOOR:
+                return "door mode"
+        elif dev == const.DEVICE_TYPE_OPENER:
+            if mode == const.MODE_OPENER_DOOR:
+                return "door mode"
+            elif mode == const.MODE_OPENER_CONTINUOUS:
+                return "continuous"
+        logger.error(f'Unknown mode "{mode}" for device type {dev}')
         return "UNKNOWN"
 
     def update(self, aggressive=False):
