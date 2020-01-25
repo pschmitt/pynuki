@@ -184,6 +184,7 @@ class NukiBridge(object):
         if self.token:
             try:
                 self.info()
+                logger.info("Login succeeded.")
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 401:
                     logger.error("Could not login with provided credentials")
