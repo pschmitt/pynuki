@@ -14,8 +14,9 @@ import logging
 import requests
 
 from . import constants as const
-from .utils import hash_token, logger
 from .lock import NukiLock
+from .opener import NukiOpener
+from .utils import hash_token, logger
 
 
 # Default values
@@ -122,8 +123,11 @@ class NukiBridge(object):
     def config_auth(self, enable):
         return self.__rq("configAuth", {"enable": 1 if enable else 0})
 
-    def list(self):
-        return self.__rq("list")
+    def list(self, device_type=None):
+        data = self.__rq("list")
+        if device_type:
+            return [x for x in data if x.get("deviceType") == device_type]
+        return data
 
     def lock_state(self, nuki_id, device_type=const.DEVICE_TYPE_LOCK):
         return self.__rq(
@@ -181,10 +185,9 @@ class NukiBridge(object):
 
     # Shorthand methods
 
-    @property
-    def locks(self):
-        locks = []
-        for l in self.list():
+    def _get_devices(self, device_type=None):
+        devices = []
+        for l in self.list(device_type=device_type):
             # lock_data holds the name and nuki id of the lock
             # eg: {'name': 'Home', 'nukiId': 241563832}
             lock_data = {
@@ -199,18 +202,32 @@ class NukiBridge(object):
             }
 
             # Merge lock_data and state_data
-            # data = {**lock_data, **state_data}  # Python 3.5+
-            data = lock_data.copy()
-            data.update(state_data)
+            data = {**lock_data, **state_data}
 
-            locks.append(NukiLock(self, data))
-        return locks
+            devices.append(
+                NukiLock(self, data)
+                if device_type == const.DEVICE_TYPE_LOCK
+                else NukiOpener(self, data)
+            )
+        return devices
+
+    @property
+    def locks(self):
+        return self._get_devices(device_type=const.DEVICE_TYPE_LOCK)
+
+    @property
+    def openers(self):
+        return self._get_devices(device_type=const.DEVICE_TYPE_OPENER)
 
     def lock(self, nuki_id, block=False):
-        return self.lock_action(nuki_id, action=const.ACTION_LOCK_LOCK, block=block)
+        return self.lock_action(
+            nuki_id, action=const.ACTION_LOCK_LOCK, block=block
+        )
 
     def unlock(self, nuki_id, block=False):
-        return self.lock_action(nuki_id, action=const.ACTION_LOCK_UNLOCK, block=block)
+        return self.lock_action(
+            nuki_id, action=const.ACTION_LOCK_UNLOCK, block=block
+        )
 
     def lock_n_go(self, nuki_id, unlatch=False, block=False):
         action = const.ACTION_LOCK_LOCK_N_GO
