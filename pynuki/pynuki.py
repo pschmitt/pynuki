@@ -161,6 +161,7 @@ class NukiBridge(object):
         self.__api_url = f"http://{hostname}:{port}"
         self.secure = secure
         self.requests_timeout = timeout
+        self._json = None
         self.token = token
 
     def __repr__(self):
@@ -262,7 +263,9 @@ class NukiBridge(object):
         )
 
     def info(self, bridge_type=BRIDGE_TYPE_HW):
-        return self.__rq("info", {"bridgeType": bridge_type})
+        data = self.__rq("info", {"bridgeType": bridge_type})
+        self._json = data
+        return data
 
     # Callback endpoints
 
