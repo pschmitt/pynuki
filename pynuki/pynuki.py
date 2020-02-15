@@ -10,6 +10,9 @@ https://nuki.io/wp-content/uploads/2016/04/Bridge-API-v1.5.pdf
 
 import requests
 import logging
+import datetime
+import random
+import hashlib
 
 
 logger = logging.getLogger(__name__)
@@ -107,16 +110,23 @@ class NukiLock(object):
 
 
 class NukiBridge(object):
-    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT):
+    def __init__(self, hostname, token, port=8080, timeout=REQUESTS_TIMEOUT, usehashing=False):
         self.hostname = hostname
         self.token = token
         self.port = port
         self.requests_timeout = timeout
+        self.usehashing = usehashing
         self.__api_url = 'http://{}:{}'.format(hostname, port)
 
     def __rq(self, endpoint, params=None):
         url = '{}/{}'.format(self.__api_url, endpoint)
-        get_params = {'token': self.token}
+        if self.usehashing:
+            ts = str(datetime.datetime.utcnow().isoformat())
+            rnr = str(random.randrange(0,65535))
+            hash = hashlib.sha256(b""+ts+","+rnr+","+self.token).hexdigest()
+            get_params = {'ts': ts, 'rnr': rnr, 'hash': hash}
+        else:
+            get_params = {'token': self.token}
         if params:
             get_params.update(params)
         result = requests.get(url, params=get_params, timeout=self.requests_timeout)
