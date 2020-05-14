@@ -125,7 +125,7 @@ class NukiBridge(object):
 
     def list(self, device_type=None):
         data = self.__rq("list")
-        if device_type:
+        if device_type is not None:
             return [x for x in data if x.get("deviceType") == device_type]
         return data
 
