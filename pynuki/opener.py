@@ -6,6 +6,10 @@ from .utils import logger
 
 
 class NukiOpener(NukiDevice):
+    @property
+    def is_rto_activated(self):
+        return self.state == const.STATE_OPENER_RTO_ACTIVE
+
     def activate_rto(self, block=False):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
