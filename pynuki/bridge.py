@@ -110,7 +110,7 @@ class NukiBridge(object):
         return data
 
     def auth(self):
-        url = f"{self.__api_url}/{auth}"
+        url = f"{self.__api_url}/auth"
         result = requests.get(url, timeout=self.requests_timeout)
         result.raise_for_status()
         data = result.json()
