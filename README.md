@@ -1,5 +1,10 @@
 # pynuki
 
+![PyPI](https://img.shields.io/pypi/v/pynuki)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pynuki)
+![PyPI - License](https://img.shields.io/pypi/l/pynuki)
+![Python Lint](https://github.com/pschmitt/pynuki/workflows/Python%20Lint/badge.svg)
+
 Python library for interacting with Nuki locks and openers
 
 ## Installation
