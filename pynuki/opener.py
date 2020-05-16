@@ -14,7 +14,7 @@ class NukiOpener(NukiDevice):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
             action=const.ACTION_OPENER_ACTIVATE_RTO,
-            device_type=const.DEVICE_TYPE_OPENER,
+            device_type=self.device_type,
             block=block,
         )
 
@@ -22,7 +22,7 @@ class NukiOpener(NukiDevice):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
             action=const.ACTION_OPENER_DEACTIVATE_RTO,
-            device_type=const.DEVICE_TYPE_OPENER,
+            device_type=self.device_type,
             block=block,
         )
 
@@ -30,7 +30,7 @@ class NukiOpener(NukiDevice):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
             action=const.ACTION_OPENER_ELECTRIC_STRIKE_ACTUATION,
-            device_type=const.DEVICE_TYPE_OPENER,
+            device_type=self.device_type,
             block=block,
         )
 
@@ -38,7 +38,7 @@ class NukiOpener(NukiDevice):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
             action=const.ACTION_OPENER_ACTIVATE_CONTINUOUS,
-            device_type=const.DEVICE_TYPE_OPENER,
+            device_type=self.device_type,
             block=block,
         )
 
@@ -46,6 +46,6 @@ class NukiOpener(NukiDevice):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
             action=const.ACTION_OPENER_DEACTIVATE_CONTINUOUS,
-            device_type=const.DEVICE_TYPE_OPENER,
+            device_type=self.device_type,
             block=block,
         )
