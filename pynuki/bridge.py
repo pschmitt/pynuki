@@ -14,6 +14,7 @@ import logging
 import requests
 
 from . import constants as const
+from .device import NukiDevice
 from .lock import NukiLock
 from .opener import NukiOpener
 from .utils import hash_token, logger
@@ -198,7 +199,7 @@ class NukiBridge(object):
         for l in self.list(device_type=device_type):
             # lock_data holds the name and nuki id of the lock
             # eg: {'name': 'Home', 'nukiId': 241563832}
-            lock_data = {
+            device_data = {
                 k: v for k, v in l.items() if k not in ["lastKnownState"]
             }
             # state_data holds the last known state of the lock
@@ -210,14 +211,23 @@ class NukiBridge(object):
             }
 
             # Merge lock_data and state_data
-            data = {**lock_data, **state_data}
+            data = {**device_data, **state_data}
 
-            devices.append(
-                NukiLock(self, data)
-                if device_type == const.DEVICE_TYPE_LOCK
-                else NukiOpener(self, data)
-            )
+            dev_type = device_data.get("deviceType")
+            if dev_type == const.DEVICE_TYPE_LOCK:
+                dev = NukiLock(self, data)
+            elif dev_type == const.DEVICE_TYPE_OPENER:
+                dev = NukiOpener(self, data)
+            else:
+                logger.warning(f"Unknown device type: {dev_type}")
+                dev = NukiDevice(self, data)
+
+            devices.append(dev)
         return devices
+
+    @property
+    def devices(self):
+        return self._get_devices()
 
     @property
     def locks(self):
