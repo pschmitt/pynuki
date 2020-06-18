@@ -1,5 +1,5 @@
 appdirs==1.4.4
 packaging==20.4
 pyparsing==2.4.7
-requests==2.23.0
+requests==2.24.0
 six==1.15.0
