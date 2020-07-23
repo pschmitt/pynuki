@@ -2,6 +2,7 @@
 
 from . import constants as const
 from .utils import logger
+from .exceptions import NukiUpdateException
 
 
 class NukiDevice(object):
@@ -75,11 +76,12 @@ class NukiDevice(object):
         """
         if aggressive:
             data = self._bridge.lock_state(self.nuki_id)
-            if not data["success"]:
-                logger.warning(
-                    f"Failed to update the state of device {self.nuki_id}"
+            logger.debug(f"Received data: {data}")
+            if not data.get("success", False):
+                raise NukiUpdateException(
+                    f"Failed to update data for Nuki device {self.nuki_id}"
                 )
-            self._json = {k: v for k, v in data.items() if k != "success"}
+            self._json.update({k: v for k, v in data.items() if k != "success"})
         else:
             data = [
                 l
@@ -90,7 +92,7 @@ class NukiDevice(object):
                 "Failed to update data for lock. "
                 f"Nuki ID {self.nuki_id} volatized."
             )
-            self._json = data[0]._json
+            self._json.update(data[0]._json)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self._json}>"
