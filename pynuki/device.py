@@ -33,6 +33,14 @@ class NukiDevice(object):
     @property
     def state_name(self):
         return self._json.get("stateName")
+    
+    @property
+    def door_sensor_state(self):
+        return self._json.get("doorsensorState")
+
+    @property
+    def door_sensor_state_name(self):
+        return self._json.get("doorsensorStateName")
 
     @property
     def device_type(self):
