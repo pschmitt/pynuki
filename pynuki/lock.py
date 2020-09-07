@@ -15,6 +15,7 @@ class NukiLock(NukiDevice):
         return (
             self.door_sensor_state != const.STATE_DOORSENSOR_DEACTIVATED
             or self.door_sensor_state != const.STATE_DOORSENSOR_UNKNOWN
+            or self.door_sensor_state != None
         )
 
     @property
