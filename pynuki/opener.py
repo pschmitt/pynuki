@@ -10,6 +10,14 @@ class NukiOpener(NukiDevice):
     def is_rto_activated(self):
         return self.state == const.STATE_OPENER_RTO_ACTIVE
 
+    @property
+    def ringactionTimestamp(self):
+        return self._json.get("ringactionTimestamp")
+
+    @property
+    def ringactionState(self):
+        return self._json.get("ringactionState")
+
     def activate_rto(self, block=False):
         return self._bridge.lock_action(
             nuki_id=self.nuki_id,
