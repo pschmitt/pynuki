@@ -11,11 +11,11 @@ class NukiOpener(NukiDevice):
         return self.state == const.STATE_OPENER_RTO_ACTIVE
 
     @property
-    def ringactionTimestamp(self):
+    def ring_action_timestamp(self):
         return self._json.get("ringactionTimestamp")
 
     @property
-    def ringactionState(self):
+    def ring_action_state(self):
         return self._json.get("ringactionState")
 
     def activate_rto(self, block=False):
