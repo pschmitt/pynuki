@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from . import constants as const
-from .utils import logger
 from .exceptions import NukiUpdateException
+from .utils import logger
 
 
 class NukiDevice(object):
@@ -84,9 +84,9 @@ class NukiDevice(object):
             self._json.update({k: v for k, v in data.items() if k != "success"})
         else:
             data = [
-                l
-                for l in self._bridge._get_devices(self.device_type)
-                if l.nuki_id == self.nuki_id
+                dev
+                for dev in self._bridge._get_devices(self.device_type)
+                if dev.nuki_id == self.nuki_id
             ]
             assert data, (
                 "Failed to update data for lock. "

@@ -19,7 +19,6 @@ from .lock import NukiLock
 from .opener import NukiOpener
 from .utils import hash_token, logger
 
-
 # Default values
 REQUESTS_TIMEOUT = 5
 
@@ -117,7 +116,8 @@ class NukiBridge(object):
         data = result.json()
         if not data.get("success", False):
             logging.warning(
-                "Failed to authenticate against bridge. Have you pressed the button?"
+                "Failed to authenticate against bridge. "
+                "Have you pressed the button?"
             )
         return data
 
@@ -196,17 +196,17 @@ class NukiBridge(object):
 
     def _get_devices(self, device_type=None):
         devices = []
-        for l in self.list(device_type=device_type):
+        for dev in self.list(device_type=device_type):
             # lock_data holds the name and nuki id of the lock
             # eg: {'name': 'Home', 'nukiId': 241563832}
             device_data = {
-                k: v for k, v in l.items() if k not in ["lastKnownState"]
+                k: v for k, v in dev.items() if k not in ["lastKnownState"]
             }
             # state_data holds the last known state of the lock
             # eg: {'batteryCritical': False, 'state': 1, 'stateName': 'locked'}
             state_data = {
                 k: v
-                for k, v in l["lastKnownState"].items()
+                for k, v in dev["lastKnownState"].items()
                 if k not in ["timestamp"]
             }
 

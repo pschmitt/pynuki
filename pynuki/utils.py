@@ -1,10 +1,9 @@
 # coding: utf-8
 
-from datetime import datetime
-from random import randint
 import hashlib
 import logging
-
+from datetime import datetime
+from random import randint
 
 logger = logging.getLogger("pynuki")
 

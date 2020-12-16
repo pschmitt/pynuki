@@ -3,7 +3,7 @@
 ![PyPI](https://img.shields.io/pypi/v/pynuki)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pynuki)
 ![PyPI - License](https://img.shields.io/pypi/l/pynuki)
-![Python Lint](https://github.com/pschmitt/pynuki/workflows/Python%20Lint/badge.svg)
+[![CI](https://github.com/pschmitt/pynuki/workflows/CI/badge.svg)](https://github.com/pschmitt/pynuki/actions?query=workflow%3A%22CI%22)
 
 Python library for interacting with Nuki locks and openers
 

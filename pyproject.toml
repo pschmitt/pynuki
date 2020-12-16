@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "pynuki"
+version = "1.4.1"
+description = "Python bindings for nuki.io bridges"
+authors = ["Philipp Schmitt <philipp@schmitt.co>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+homepage = "https://github.com/pschmitt/pynuki"
+repository = "https://github.com/pschmitt/pynuki"
+
+[tool.poetry.dependencies]
+python = ">3.6,<4.0"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+flakehell = "^0.7.1"
+isort = "^5.6.4"
+
+[tool.black]
+line-length = 80
+
+[tool.flakehell]
+max_line_length = 80
+show_source = true
+
+[tool.flakehell.plugins]
+mccabe = ["+*"]
+pycodestyle = ["+*", "-W503"]
+# https://black.readthedocs.io/en/stable/compatible_configs.html#flake8
+pyflakes = ["+*", "-E203", "-E501"]
+# https://black.readthedocs.io/en/stable/compatible_configs.html#pylint
+pylint = ["+*", "-C0330", "-CC0326"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
