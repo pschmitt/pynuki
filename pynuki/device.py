@@ -99,7 +99,9 @@ class NukiDevice(object):
         Update the state of the Nuki device from a callback
         :param json: Callback JSON body
         """
-        assert json.get("nukiId") == self.nuki_id, "Failed to update data from callback. Wrong Nuki ID."
+        assert (
+            json.get("nukiId") == self.nuki_id
+        ), "Failed to update data from callback. Wrong Nuki ID."
         self._json.update(json)
 
     def __repr__(self):
