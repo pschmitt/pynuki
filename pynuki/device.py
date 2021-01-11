@@ -23,6 +23,14 @@ class NukiDevice(object):
         return self._json.get("batteryCritical")
 
     @property
+    def battery_charge(self):
+        return self._json.get("batteryChargeState")
+
+    @property
+    def battery_critical_keypad(self):
+        return self._json.get("keypadBatteryCritical")
+
+    @property
     def firmware_version(self):
         return self._json.get("firmwareVersion")
 
