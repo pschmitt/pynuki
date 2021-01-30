@@ -36,6 +36,10 @@ class NukiLock(NukiDevice):
     def battery_critical_keypad(self):
         return self._json.get("keypadBatteryCritical")
 
+    @property
+    def battery_percentage(self):
+        return self._json.get("batteryChargeState")
+
     def lock(self, block=False):
         return self._bridge.lock(nuki_id=self.nuki_id, block=block)
 
