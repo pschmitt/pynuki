@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pynuki"
-version = "1.4.1"
+version = "1.4.2"
 description = "Python bindings for nuki.io bridges"
 authors = ["Philipp Schmitt <philipp@schmitt.co>"]
 license = "GPL-3.0-only"

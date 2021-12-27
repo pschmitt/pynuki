@@ -204,11 +204,14 @@ class NukiBridge(object):
             }
             # state_data holds the last known state of the lock
             # eg: {'batteryCritical': False, 'state': 1, 'stateName': 'locked'}
-            state_data = {
-                k: v
-                for k, v in dev["lastKnownState"].items()
-                if k not in ["timestamp"]
-            }
+            try:
+                state_data = {
+                    k: v
+                    for k, v in dev["lastKnownState"].items()
+                    if k not in ["timestamp"]
+                }
+            except KeyError:
+                state_data = {}
 
             # Merge lock_data and state_data
             data = {**device_data, **state_data}
