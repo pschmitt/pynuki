@@ -20,6 +20,8 @@ BRIDGE_TYPE_SW = 2
 # https://developer.nuki.io/page/nuki-bridge-http-api-1-10/4#heading--device-types
 DEVICE_TYPE_LOCK = 0
 DEVICE_TYPE_OPENER = 2
+DEVICE_TYPE_SMARTDOOR = 3
+DEVICE_TYPE_SMARTLOCK3 = 4
 
 # https://developer.nuki.io/page/nuki-bridge-http-api-1-10/4#heading--modes
 MODE_LOCK_DOOR = 2
