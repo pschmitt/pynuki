@@ -216,6 +216,10 @@ class NukiBridge(object):
             dev_type = device_data.get("deviceType")
             if dev_type == const.DEVICE_TYPE_LOCK:
                 dev = NukiLock(self, data)
+            elif dev_type == const.DEVICE_TYPE_SMARTDOOR:
+                dev = NukiLock(self, data)
+            elif dev_type == const.DEVICE_TYPE_SMARTLOCK3:
+                dev = NukiLock(self, data)
             elif dev_type == const.DEVICE_TYPE_OPENER:
                 dev = NukiOpener(self, data)
             else:
