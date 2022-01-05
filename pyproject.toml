@@ -14,31 +14,15 @@ requests = ">=2.27,<3"
 
 [tool.poetry.dev-dependencies]
 black = ">21.11b0"
-flakehell = "^0.9.0"
+flake8 = ">4.0.0,<5.0.0"
 isort = ">5.8.0"
 
 [tool.black]
 line-length = 80
 
 [tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
+profile = "black"
 line_length = 80
-
-[tool.flakehell]
-max_line_length = 80
-show_source = true
-
-[tool.flakehell.plugins]
-mccabe = ["+*"]
-pycodestyle = ["+*", "-W503"]
-# https://black.readthedocs.io/en/stable/compatible_configs.html#flake8
-pyflakes = ["+*", "-E203", "-E501"]
-# https://black.readthedocs.io/en/stable/compatible_configs.html#pylint
-pylint = ["+*", "-C0330", "-CC0326"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  flakehell:
+  flake8:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -24,9 +24,9 @@ jobs:
           pip install poetry
           poetry install
 
-      - name: Lint with flakehell
+      - name: Lint with flake8
         run: |
-          poetry run flakehell lint
+          poetry run flake8 .
 
   isort:
     runs-on: ubuntu-latest
