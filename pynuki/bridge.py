@@ -238,7 +238,11 @@ class NukiBridge(object):
 
     @property
     def locks(self):
-        return self._get_devices(device_type=const.DEVICE_TYPE_LOCK)
+        locks = []
+        for device in self._get_devices():
+            if isinstance(device, NukiLock):
+                locks.append(device)
+        return locks
 
     @property
     def openers(self):
