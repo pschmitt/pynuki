@@ -248,38 +248,38 @@ class NukiBridge(object):
     def openers(self):
         return self._get_devices(device_type=const.DEVICE_TYPE_OPENER)
 
-    def lock(self, nuki_id, block=False):
+    def lock(self, nuki_id, device_type, block=False):
         return self.lock_action(
             nuki_id,
             action=const.ACTION_LOCK_LOCK,
-            device_type=const.DEVICE_TYPE_LOCK,
+            device_type=device_type,
             block=block,
         )
 
-    def unlock(self, nuki_id, block=False):
+    def unlock(self, nuki_id, device_type, block=False):
         return self.lock_action(
             nuki_id,
             action=const.ACTION_LOCK_UNLOCK,
-            device_type=const.DEVICE_TYPE_LOCK,
+            device_type=device_type, 
             block=block,
         )
 
-    def lock_n_go(self, nuki_id, unlatch=False, block=False):
+    def lock_n_go(self, nuki_id, device_type, unlatch=False, block=False):
         action = const.ACTION_LOCK_LOCK_N_GO
         if unlatch:
             action = const.ACTION_LOCK_LOCK_N_GO_WITH_UNLATCH
         return self.lock_action(
             nuki_id,
             action=action,
-            device_type=const.DEVICE_TYPE_LOCK,
+            device_type=device_type, 
             block=block,
         )
 
-    def unlatch(self, nuki_id, block=False):
+    def unlatch(self, nuki_id, device_type, block=False):
         return self.lock_action(
             nuki_id,
             action=const.ACTION_LOCK_UNLATCH,
-            device_type=const.DEVICE_TYPE_LOCK,
+            device_type=device_type, 
             block=block,
         )
 
