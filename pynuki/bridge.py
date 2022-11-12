@@ -75,7 +75,7 @@ class NukiBridge(object):
     @token.setter
     def token(self, token):
         self.__token = token
-        self.__tokendigest = sha256sum(token)
+        self.__tokendigest = sha256sum(token) if token else None
         # Try to log in if token has been set
         if self.token:
             try:
