@@ -11,6 +11,7 @@ repository = "https://github.com/pschmitt/pynuki"
 [tool.poetry.dependencies]
 python = ">3.8,<4.0"
 requests = ">=2.27,<3"
+pynacl = "^1.5.0"
 
 [tool.poetry.dev-dependencies]
 black = ">21.11b0"
