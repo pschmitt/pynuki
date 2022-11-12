@@ -18,7 +18,7 @@ def sha256sum(text):
 def encrypt_token(digest):
     nonce = nacl.utils.random(24)
     rnr = randint(0, 65535)
-    ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ," + str(rnr))
+    ts = datetime.utcnow().strftime(f"%Y-%m-%dT%H:%M:%SZ,{rnr}")
     box = nacl.secret.SecretBox(digest)
     ctoken = box.encrypt(ts.encode("utf-8"), nonce)
     return {"ctoken": str(ctoken.ciphertext.hex()), "nonce": str(nonce.hex())}
