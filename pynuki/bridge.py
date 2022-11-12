@@ -2,7 +2,7 @@
 # coding: utf-8
 
 """
-Based on the Bridge API version 1.10
+Based on the Bridge API version 1.13.2
 
 Documentation:
 https://developer.nuki.io/t/bridge-http-api/26
@@ -17,7 +17,7 @@ from . import constants as const
 from .device import NukiDevice
 from .lock import NukiLock
 from .opener import NukiOpener
-from .utils import hash_token, logger
+from .utils import encrypt_token, logger, sha256sum
 
 # Default values
 REQUESTS_TIMEOUT = 5
@@ -68,9 +68,14 @@ class NukiBridge(object):
     def token(self):
         return self.__token
 
+    @property
+    def tokendigest(self):
+        return self.__tokendigest
+
     @token.setter
     def token(self, token):
         self.__token = token
+        self.__tokendigest = sha256sum(token) if token else None
         # Try to log in if token has been set
         if self.token:
             try:
@@ -91,7 +96,7 @@ class NukiBridge(object):
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
         if self.secure:
-            get_params = hash_token(self.token)
+            get_params = encrypt_token(self.tokendigest)
         else:
             get_params = {"token": self.token}
         if params:
