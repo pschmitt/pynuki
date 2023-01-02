@@ -42,9 +42,13 @@ class NukiDevice(object):
     def device_type_str(self):
         dev = self.device_type
         if dev == const.DEVICE_TYPE_LOCK:
-            return "lock"
+            return "Nuki Smart Lock 1.0/2.0"
         elif dev == const.DEVICE_TYPE_OPENER:
-            return "opener"
+            return "Nuki Opener"
+        elif dev == const.DEVICE_TYPE_SMARTDOOR:
+            return "Nuki Smart Door"
+        elif dev == const.DEVICE_TYPE_SMARTLOCK3:
+            return "Nuki Smart Lock 3.0 (Pro)"
         logger.error(f"Unknown device type: {dev}")
         return "UNKNOWN"
 
