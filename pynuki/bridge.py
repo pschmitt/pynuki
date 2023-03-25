@@ -260,18 +260,24 @@ class NukiBridge(object):
         return self.lock_action(
             nuki_id,
             action=const.ACTION_LOCK_UNLOCK,
-            device_type=device_type, 
+            device_type=device_type,
             block=block,
         )
 
-    def lock_n_go(self, nuki_id, device_type=const.DEVICE_TYPE_LOCK, unlatch=False, block=False):
+    def lock_n_go(
+        self,
+        nuki_id,
+        device_type=const.DEVICE_TYPE_LOCK,
+        unlatch=False,
+        block=False,
+    ):
         action = const.ACTION_LOCK_LOCK_N_GO
         if unlatch:
             action = const.ACTION_LOCK_LOCK_N_GO_WITH_UNLATCH
         return self.lock_action(
             nuki_id,
             action=action,
-            device_type=device_type, 
+            device_type=device_type,
             block=block,
         )
 
@@ -279,7 +285,7 @@ class NukiBridge(object):
         return self.lock_action(
             nuki_id,
             action=const.ACTION_LOCK_UNLATCH,
-            device_type=device_type, 
+            device_type=device_type,
             block=block,
         )
 
