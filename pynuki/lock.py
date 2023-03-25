@@ -37,15 +37,24 @@ class NukiLock(NukiDevice):
         return self._json.get("keypadBatteryCritical")
 
     def lock(self, block=False):
-        return self._bridge.lock(nuki_id=self.nuki_id, block=block)
+        return self._bridge.lock(
+            nuki_id=self.nuki_id, device_type=self.device_type, block=block
+        )
 
     def unlock(self, block=False):
-        return self._bridge.unlock(nuki_id=self.nuki_id, block=block)
+        return self._bridge.unlock(
+            nuki_id=self.nuki_id, device_type=self.device_type, block=block
+        )
 
     def lock_n_go(self, unlatch=False, block=False):
         return self._bridge.lock_n_go(
-            nuki_id=self.nuki_id, unlatch=unlatch, block=block
+            nuki_id=self.nuki_id,
+            unlatch=unlatch,
+            device_type=self.device_type,
+            block=block,
         )
 
     def unlatch(self, block=False):
-        return self._bridge.unlatch(nuki_id=self.nuki_id, block=block)
+        return self._bridge.unlatch(
+            nuki_id=self.nuki_id, device_type=self.device_type, block=block
+        )
