@@ -8,7 +8,7 @@ class NukiLock(NukiDevice):
     @property
     def is_locked(self):
         return self.state == const.STATE_LOCK_LOCKED
-    
+
     @property
     def is_unlocked(self):
         return self.state == const.STATE_LOCK_UNLOCKED
@@ -24,7 +24,7 @@ class NukiLock(NukiDevice):
     @property
     def is_jammed(self):
         return self.state == const.STATE_LOCK_MOTOR_BLOCKED
-        
+
     @property
     def is_door_sensor_activated(self):
         # Nuki v1 locks don't have a door sensor, therefore the
