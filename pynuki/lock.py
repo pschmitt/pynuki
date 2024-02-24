@@ -45,6 +45,10 @@ class NukiLock(NukiDevice):
         return self._json.get("doorsensorStateName")
 
     @property
+    def battery_charging(self):
+        return self._json.get("batteryCharging")
+
+    @property
     def battery_charge(self):
         return self._json.get("batteryChargeState")
 
