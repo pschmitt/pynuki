@@ -87,7 +87,9 @@ jobs:
         fi
 
   release:
-    needs: publish
+    needs:
+      - build
+      - publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
