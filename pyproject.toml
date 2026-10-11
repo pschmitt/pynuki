@@ -8,6 +8,7 @@ license = "GPL-3.0-only"
 authors = [{ name = "Philipp Schmitt", email = "philipp@schmitt.co" }]
 dependencies = [
     "requests>=2.27,<3",
+    "urllib3>=1.26,<3",
     "pynacl>=1.5.0,<2.0.0",
 ]
 
