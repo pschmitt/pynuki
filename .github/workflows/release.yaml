@@ -4,13 +4,15 @@ on:
   push:
     tags:
       - '*'
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
     - uses: actions/checkout@v7
 
@@ -20,6 +22,7 @@ jobs:
         python-version: ">=3.13,<4.0"
 
     - name: Verify tag matches package version
+      id: version
       run: |
         VERSION="$(uv version --short)"
         if [[ "${GITHUB_REF_NAME}" != "${VERSION}" ]]
@@ -27,26 +30,58 @@ jobs:
           printf 'Tag %s does not match package version %s\n' "${GITHUB_REF_NAME}" "${VERSION}" >&2
           exit 1
         fi
+        printf 'version=%s\n' "${VERSION}" >> "${GITHUB_OUTPUT}"
 
     - name: Build
       run: uv build --no-sources
 
+    - name: Upload distributions
+      uses: actions/upload-artifact@v7
+      with:
+        name: dist
+        path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pynuki/
+    permissions:
+      id-token: write
+    steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v10.3.0
+
+    - name: Download distributions
+      uses: actions/download-artifact@v8
+      with:
+        name: dist
+        path: dist/
+
     - name: Publish to PyPI
       env:
-        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        VERSION: ${{ needs.build.outputs.version }}
       run: |
-        VERSION="$(uv version --short)"
         HTTP_STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "https://pypi.org/pypi/pynuki/${VERSION}/json")"
         if [[ "${HTTP_STATUS}" == "200" ]]
         then
           printf 'pynuki %s is already on PyPI; skipping publish\n' "${VERSION}"
         elif [[ "${HTTP_STATUS}" == "404" ]]
         then
-          uv publish
+          uv publish dist/*
         else
           printf 'Unexpected PyPI response status: %s\n' "${HTTP_STATUS}" >&2
           exit 1
         fi
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v7
 
     - name: Create GitHub release
       env:
