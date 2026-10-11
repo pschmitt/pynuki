@@ -144,9 +144,14 @@ class NukiBridge(object):
                     # Fresh params per attempt: the encrypted token is
                     # single-use
                     params = make_params() if make_params else None
-                    return requests.get(
-                        url, params=params, timeout=self.requests_timeout
-                    )
+                    try:
+                        return requests.get(
+                            url, params=params, timeout=self.requests_timeout
+                        )
+                    finally:
+                        # Before any retry backoff, so the backoff counts
+                        # towards the gap instead of adding to it
+                        pacer.last_done = time.monotonic()
                 except requests.exceptions.ConnectionError as err:
                     if attempt >= self.request_retries or not _never_sent(err):
                         raise
@@ -159,8 +164,6 @@ class NukiBridge(object):
                         f"retrying in {delay}s: {err}"
                     )
                     time.sleep(delay)
-                finally:
-                    pacer.last_done = time.monotonic()
 
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
