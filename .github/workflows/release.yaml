@@ -1,11 +1,12 @@
 name: PyPI release
 
 on:
-  release:
-    types: [created]
   push:
     tags:
       - '*'
+
+permissions:
+  contents: write
 
 jobs:
   release:
@@ -18,10 +19,42 @@ jobs:
       with:
         python-version: ">=3.13,<4.0"
 
+    - name: Verify tag matches package version
+      run: |
+        VERSION="$(uv version --short)"
+        if [[ "${GITHUB_REF_NAME}" != "${VERSION}" ]]
+        then
+          printf 'Tag %s does not match package version %s\n' "${GITHUB_REF_NAME}" "${VERSION}" >&2
+          exit 1
+        fi
+
     - name: Build
       run: uv build --no-sources
 
-    - name: Publish
+    - name: Publish to PyPI
       env:
         UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-      run: uv publish
+      run: |
+        VERSION="$(uv version --short)"
+        HTTP_STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "https://pypi.org/pypi/pynuki/${VERSION}/json")"
+        if [[ "${HTTP_STATUS}" == "200" ]]
+        then
+          printf 'pynuki %s is already on PyPI; skipping publish\n' "${VERSION}"
+        elif [[ "${HTTP_STATUS}" == "404" ]]
+        then
+          uv publish
+        else
+          printf 'Unexpected PyPI response status: %s\n' "${HTTP_STATUS}" >&2
+          exit 1
+        fi
+
+    - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1
+        then
+          printf 'GitHub release %s already exists; skipping creation\n' "${GITHUB_REF_NAME}"
+        else
+          gh release create "${GITHUB_REF_NAME}" --verify-tag --generate-notes
+        fi
