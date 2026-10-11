@@ -1,22 +1,26 @@
-[tool.poetry]
+[project]
 name = "pynuki"
 version = "1.6.3"
 description = "Python bindings for nuki.io bridges"
-authors = ["Philipp Schmitt <philipp@schmitt.co>"]
-license = "GPL-3.0-only"
 readme = "README.md"
-homepage = "https://github.com/pschmitt/pynuki"
-repository = "https://github.com/pschmitt/pynuki"
+requires-python = ">=3.13,<4.0"
+license = "GPL-3.0-only"
+authors = [{ name = "Philipp Schmitt", email = "philipp@schmitt.co" }]
+dependencies = [
+    "requests>=2.27,<3",
+    "pynacl>=1.5.0,<2.0.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.13,<4.0"
-requests = ">=2.27,<3"
-pynacl = "^1.5.0"
+[project.urls]
+Homepage = "https://github.com/pschmitt/pynuki"
+Repository = "https://github.com/pschmitt/pynuki"
 
-[tool.poetry.dev-dependencies]
-black = ">21.11b0"
-flake8 = ">=7.4,<7.5"
-isort = ">5.8.0"
+[dependency-groups]
+dev = [
+    "black>21.11b0",
+    "flake8>=7.4,<7.5",
+    "isort>5.8.0",
+]
 
 [tool.black]
 line-length = 80
@@ -26,5 +30,8 @@ profile = "black"
 line_length = 80
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
