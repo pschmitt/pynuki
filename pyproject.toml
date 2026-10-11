@@ -1,6 +1,6 @@
 [project]
 name = "pynuki"
-version = "1.6.3"
+version = "1.7.0"
 description = "Python bindings for nuki.io bridges"
 readme = "README.md"
 requires-python = ">=3.13,<4.0"
