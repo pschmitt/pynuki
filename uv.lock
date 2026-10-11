@@ -407,6 +407,7 @@ source = { editable = "." }
 dependencies = [
     { name = "pynacl" },
     { name = "requests" },
+    { name = "urllib3" },
 ]
 
 [package.dev-dependencies]
@@ -420,6 +421,7 @@ dev = [
 requires-dist = [
     { name = "pynacl", specifier = ">=1.5.0,<2.0.0" },
     { name = "requests", specifier = ">=2.27,<3" },
+    { name = "urllib3", specifier = ">=1.26,<3" },
 ]
 
 [package.metadata.requires-dev]

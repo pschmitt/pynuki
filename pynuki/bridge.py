@@ -10,8 +10,11 @@ https://developer.nuki.io/uploads/short-url/a8eIacr0ku9zogOyuIuSEyw1PcA.pdf
 """
 
 import logging
+import threading
+import time
 
 import requests
+from urllib3.exceptions import ConnectTimeoutError, NewConnectionError
 
 from . import constants as const
 from .device import NukiDevice
@@ -21,6 +24,36 @@ from .utils import encrypt_token, logger, sha256sum
 
 # Default values
 REQUESTS_TIMEOUT = 5
+# The hardware bridge serves one connection at a time and refuses a new one
+# while it is still closing the previous one, so requests to a bridge are
+# serialised, spaced and retried when the connection is refused.
+REQUESTS_MIN_GAP = 0.5  # seconds between the end of a request and the next
+REQUESTS_RETRIES = 4  # extra attempts after a refused connection
+REQUESTS_BACKOFF = (1, 2, 3, 5)  # seconds to wait before each retry
+
+# One pacer per bridge address, shared by every NukiBridge instance using it
+_PACERS = {}
+_PACERS_LOCK = threading.Lock()
+
+
+class _Pacer(object):
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.last_done = 0.0
+
+
+def _pacer(hostname, port):
+    with _PACERS_LOCK:
+        return _PACERS.setdefault((hostname, port), _Pacer())
+
+
+def _never_sent(err):
+    """True if the request cannot have reached the bridge (the connection
+    was refused or never opened), so retrying it cannot repeat an action."""
+    if isinstance(err, requests.exceptions.ConnectTimeout):
+        return True
+    reason = getattr(err.args[0], "reason", None) if err.args else None
+    return isinstance(reason, (NewConnectionError, ConnectTimeoutError))
 
 
 class InvalidCredentialsException(Exception):
@@ -35,12 +68,16 @@ class NukiBridge(object):
         port=8080,
         secure=True,
         timeout=REQUESTS_TIMEOUT,
+        min_request_gap=REQUESTS_MIN_GAP,
+        request_retries=REQUESTS_RETRIES,
     ):
         self.hostname = hostname
         self.port = port
         self.__api_url = f"http://{hostname}:{port}"
         self.secure = secure
         self.requests_timeout = timeout
+        self.min_request_gap = min_request_gap
+        self.request_retries = request_retries
         self._json = None
         self.token = token
 
@@ -93,20 +130,56 @@ class NukiBridge(object):
         info = self.info()
         return info.get("bridgeType") == const.BRIDGE_TYPE_HW
 
+    def __get(self, url, make_params=None):
+        pacer = _pacer(self.hostname, self.port)
+        with pacer.lock:
+            attempt = 0
+            while True:
+                wait = self.min_request_gap - (
+                    time.monotonic() - pacer.last_done
+                )
+                if wait > 0:
+                    time.sleep(wait)
+                try:
+                    # Fresh params per attempt: the encrypted token is
+                    # single-use
+                    params = make_params() if make_params else None
+                    try:
+                        return requests.get(
+                            url, params=params, timeout=self.requests_timeout
+                        )
+                    finally:
+                        # Before any retry backoff, so the backoff counts
+                        # towards the gap instead of adding to it
+                        pacer.last_done = time.monotonic()
+                except requests.exceptions.ConnectionError as err:
+                    if attempt >= self.request_retries or not _never_sent(err):
+                        raise
+                    delay = REQUESTS_BACKOFF[
+                        min(attempt, len(REQUESTS_BACKOFF) - 1)
+                    ]
+                    attempt += 1
+                    logger.debug(
+                        f"Bridge refused the connection (attempt {attempt}), "
+                        f"retrying in {delay}s: {err}"
+                    )
+                    time.sleep(delay)
+
     def __rq(self, endpoint, params=None):
         url = f"{self.__api_url}/{endpoint}"
-        if self.secure:
-            get_params = encrypt_token(self.tokendigest)
-        else:
-            get_params = {"token": self.token}
-        if params:
-            get_params.update(params)
-        # Convert list to string to prevent request from encoding the url params
-        # https://stackoverflow.com/a/23497912
-        get_params_str = "&".join(f"{k}={v}" for k, v in get_params.items())
-        result = requests.get(
-            url, params=get_params_str, timeout=self.requests_timeout
-        )
+
+        def make_params():
+            if self.secure:
+                get_params = encrypt_token(self.tokendigest)
+            else:
+                get_params = {"token": self.token}
+            if params:
+                get_params.update(params)
+            # Convert list to string to prevent request from encoding the url
+            # params https://stackoverflow.com/a/23497912
+            return "&".join(f"{k}={v}" for k, v in get_params.items())
+
+        result = self.__get(url, make_params)
         result.raise_for_status()
         data = result.json()
         if "success" in data:
@@ -116,7 +189,7 @@ class NukiBridge(object):
 
     def auth(self):
         url = f"{self.__api_url}/auth"
-        result = requests.get(url, timeout=self.requests_timeout)
+        result = self.__get(url)
         result.raise_for_status()
         data = result.json()
         if not data.get("success", False):
